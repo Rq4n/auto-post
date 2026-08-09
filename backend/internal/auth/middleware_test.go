@@ -41,8 +41,8 @@ func TestAuthMiddleware_Authenticated(t *testing.T) {
 	req.Header.Set("Cookie", rec.Header().Get("Set-cookie"))
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// should get the userID param
-		// if received != want test case
+		// Get userID context
+		// if received userID != got
 
 		userID := r.Context().Value("userID")
 
@@ -56,5 +56,26 @@ func TestAuthMiddleware_Authenticated(t *testing.T) {
 
 	if rec.Code != http.StatusOK {
 		t.Errorf("expected 200, got %d", rec.Code)
+	}
+}
+
+func TestAuthMiddleware_NoUserID(t *testing.T) {
+	gothic.Store = sessions.NewCookieStore([]byte("test-secret"))
+
+	req := httptest.NewRequest("GET", "/api/post", nil)
+	rec := httptest.NewRecorder()
+
+	session, _ := gothic.Store.Get(req, "session")
+	session.Save(req, rec)
+
+	req.Header.Set("Cookie", rec.Header().Get("Set-cookie"))
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Fatal("handler should not be called")
+	})
+	AuthMiddleware(handler).ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Errorf("expected 401 got %d", rec.Code)
 	}
 }

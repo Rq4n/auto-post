@@ -2,4 +2,4 @@
 SELECT 'up SQL query';
 
 -- +goose Down
-SELECT 'down SQL query';
+DROP TABLE IF NOT EXISTS users;
