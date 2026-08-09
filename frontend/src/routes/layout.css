@@ -1,0 +1,6 @@
+@import "tailwindcss";
+@plugin '@tailwindcss/forms';
+
+body {
+  font-family: "JetBrains Mono", monospace;
+}
