@@ -11,6 +11,8 @@ import (
 	"github.com/markbates/goth/providers/twitterv2"
 )
 
+var Store *sessions.Store
+
 const (
 	key    = "randomString"
 	maxAge = 86400 * 30 // 30 days
