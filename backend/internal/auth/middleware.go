@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/markbates/goth/gothic"
@@ -14,12 +15,14 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		_, ok := session.Values["user_id"]
+		userID, ok := session.Values["user_id"]
 		if !ok {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		ctx := context.WithValue(context.Background(), "userID", userID)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
