@@ -14,7 +14,7 @@ func TestAuthMiddleware_NoSession(t *testing.T) {
 	// so we create a mock one
 	gothic.Store = sessions.NewCookieStore([]byte("test-secret"))
 
-	req := httptest.NewRequest("GET", "api/posts", nil)
+	req := httptest.NewRequest("GET", "/api/post", nil)
 	rec := httptest.NewRecorder()
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -24,5 +24,37 @@ func TestAuthMiddleware_NoSession(t *testing.T) {
 
 	if rec.Code != http.StatusUnauthorized {
 		t.Errorf("expected 401, got %d", rec.Code)
+	}
+}
+
+func TestAuthMiddleware_Authenticated(t *testing.T) {
+	gothic.Store = sessions.NewCookieStore([]byte("test-secret"))
+
+	req := httptest.NewRequest("GET", "/api/post", nil)
+	rec := httptest.NewRecorder()
+
+	// get session value and save like cmd/callback.go
+	session, _ := gothic.Store.Get(req, "session")
+	session.Values["user_id"] = "123"
+	session.Save(req, rec)
+
+	req.Header.Set("Cookie", rec.Header().Get("Set-cookie"))
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// should get the userID param
+		// if received != want test case
+
+		userID := r.Context().Value("userID")
+
+		if userID != "123" {
+			t.Errorf("expected userID 123 got %v", userID)
+		}
+
+		w.WriteHeader(http.StatusOK)
+	})
+	AuthMiddleware(handler).ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Errorf("expected 200, got %d", rec.Code)
 	}
 }
