@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Rq4n/autopost/internal/store"
 )
@@ -16,6 +17,10 @@ func NewSocialService(store store.Querier) *SocialService {
 	}
 }
 
-func (s *SocialService) ConnectNewSocial(ctx context.Context, provider string) (*store.Post, error) {
-	return nil, nil
+func (s *SocialService) ConnectNewSocial(ctx context.Context, provider string) (*store.SocialConnection, error) {
+	social, err := s.store.ConnectNewProvider(ctx, provider)
+	if err != nil {
+		return nil, fmt.Errorf("failed to start provider %w", err)
+	}
+	return &social, nil
 }

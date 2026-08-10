@@ -22,3 +22,10 @@ type SocialConnection struct {
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 }
+
+type User struct {
+	ID        pgtype.UUID
+	GoogleID  string
+	Email     string
+	CreatedAt pgtype.Timestamp
+}

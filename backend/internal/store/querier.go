@@ -11,6 +11,8 @@ import (
 type Querier interface {
 	ConnectNewProvider(ctx context.Context, provider string) (SocialConnection, error)
 	CreateNewPosts(ctx context.Context, arg CreateNewPostsParams) (Post, error)
+	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	GetUserByGoogleID(ctx context.Context, email string) (User, error)
 }
 
 var _ Querier = (*Queries)(nil)
