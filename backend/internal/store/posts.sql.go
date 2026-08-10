@@ -12,7 +12,7 @@ import (
 const createNewPosts = `-- name: CreateNewPosts :one
 INSERT INTO posts (title, content)
 VALUES ($1, $2)
-  RETURNING id, title, content, created_at, updated_at
+RETURNING id, title, content, created_at, updated_at
 `
 
 type CreateNewPostsParams struct {

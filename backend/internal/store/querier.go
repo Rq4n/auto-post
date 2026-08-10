@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	ConnectNewProvider(ctx context.Context, provider string) (SocialConnection, error)
 	CreateNewPosts(ctx context.Context, arg CreateNewPostsParams) (Post, error)
 }
 

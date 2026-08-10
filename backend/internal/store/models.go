@@ -16,14 +16,9 @@ type Post struct {
 	UpdatedAt pgtype.Timestamp
 }
 
-type PostPublication struct {
-	ID          pgtype.UUID
-	PostID      pgtype.UUID
-	Platform    string
-	Status      string
-	ExternalID  pgtype.Text
-	ExternalUrl pgtype.Text
-	PublishedAt pgtype.Timestamp
-	CreatedAt   pgtype.Timestamp
-	UpdatedAt   pgtype.Timestamp
+type SocialConnection struct {
+	ID        pgtype.UUID
+	Provider  string
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
 }
