@@ -2,8 +2,7 @@
 package auth
 
 import (
-	"os"
-
+	"github.com/Rq4n/autopost/internal/config"
 	"github.com/gorilla/sessions"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
@@ -17,9 +16,11 @@ const (
 	key    = "randomString"
 	maxAge = 86400 * 30 // 30 days
 	isProd = false      // Set to true when serving over https
+
 )
 
-func NewAuth() {
+
+func NewAuth(cfg config.GoogleOAuth, twitter config.TwitterOAuth) {
 	store := sessions.NewCookieStore([]byte(key))
 	store.MaxAge(maxAge)
 	store.Options.Path = "/"
@@ -28,8 +29,23 @@ func NewAuth() {
 
 	gothic.Store = store
 
+	// goth.UseProviders(
+	// 	twitterv2.New(os.Getenv("TWITTER_CLIENT_ID"), os.Getenv("TWITTER_CLIENT_SECRET"), "http://localhost:3000/auth/twitterv2/callback"),
+	// 	google.New(os.Getenv("GOOGLE_CLIENT_ID"), os.Getenv("GOOGLE_CLIENT_SECRET"), "http://localhost:3000/auth/google/callback"),
+	// )
+
 	goth.UseProviders(
-		twitterv2.New(os.Getenv("TWITTER_CLIENT_ID"), os.Getenv("TWIITER_CLIENT_SECRET"), "http://localhost:3000/auth/twitterv2/callback"),
-		google.New(os.Getenv("GOOGLE_CLIENT_ID"), os.Getenv("GOOGLE_CLIENT_SECRET"), "http://localhost:3000/auth/google/callback"),
+		google.New(
+			cfg.ClientID,
+			cfg.ClientSecret,
+			cfg.RedirectURL,
+			cfg.Scopes...,
+		),
+
+		twitterv2.New(
+			twitter.ClientID,
+			twitter.ClientSecret,
+			"http://localhost:8080/auth/twitterv2/callback",
+		),
 	)
 }

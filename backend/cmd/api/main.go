@@ -23,7 +23,10 @@ func main() {
 		log.Fatal("failed to load config file ")
 	}
 
-	auth.NewAuth()
+	auth.NewAuth(
+		cfg.Providers.Google,
+		cfg.Providers.Twitter,
+	)
 
 	dsn := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
