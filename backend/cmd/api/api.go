@@ -50,8 +50,8 @@ func (a *app) mount() http.Handler {
 
 	r.Post("/api/post", a.handlePost.handleCreateNewPost)
 
-	r.Get("/auth/{provider}/callback", a.handleUser.getAuthCallbackFunction)
 	r.Get("/auth/{provider}", beginAuthProviderCallback)
+	r.Get("/auth/{provider}/callback", a.handleUser.getAuthCallbackFunction)
 
 	return r
 }
