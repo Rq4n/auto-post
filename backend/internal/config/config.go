@@ -22,7 +22,7 @@ type GoogleOAuth struct {
 	ClientSecret string
 	ClientID     string
 	RedirectURL  string
-	Scopes       []string
+	// Scopes       []string
 }
 
 type TwitterOAuth struct {
@@ -51,11 +51,11 @@ func LoadConfig() (*Config, error) {
 				ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
 				ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
 				RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URL"),
-				Scopes: []string{
-					"openid",
-					"email",
-					"profile",
-				},
+				// Scopes: []string{
+				// 	"openid",
+				// 	"email",
+				// 	"profile",
+				// },
 			},
 			Twitter: TwitterOAuth{
 				ClientSecret: os.Getenv("TWITTER_CLIENT_SECRET"),

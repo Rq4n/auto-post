@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/Rq4n/autopost/internal/service"
@@ -22,22 +21,28 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 
 func beginAuthProviderCallback(w http.ResponseWriter, r *http.Request) {
 	provider := chi.URLParam(r, "provider")
-	r = r.WithContext(context.WithValue(context.Background(), "provider", provider))
+	r = r.WithContext(context.WithValue(r.Context(), "provider", provider))
 	gothic.BeginAuthHandler(w, r)
 }
 
 func (h *UserHandler) getAuthCallbackFunction(w http.ResponseWriter, r *http.Request) {
 	provider := chi.URLParam(r, "provider")
-	r = r.WithContext(context.WithValue(context.Background(), "provider", provider))
+
+	ctx := context.WithValue(r.Context(), "provider", provider)
+	r = r.WithContext(ctx)
 
 	googleUser, err := gothic.CompleteUserAuth(w, r)
 	if err != nil {
-		fmt.Println(w, r)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	user, err := h.userService.GetUserByGoogleID(r.Context(), googleUser.Email)
+
+	user, err := h.userService.GetUserByGoogleID(
+		r.Context(),
+		googleUser.Email,
+	)
 	if err != nil {
-		h.userService.CreateUser(
+		user, err = h.userService.CreateUser(
 			r.Context(),
 			googleUser.Email,
 			googleUser.UserID,
@@ -60,7 +65,6 @@ func (h *UserHandler) getAuthCallbackFunction(w http.ResponseWriter, r *http.Req
 	if err != nil {
 		http.Error(w, "sessions error", http.StatusInternalServerError)
 		return
-
 	}
 
 	http.Redirect(w, r, "http://localhost:5173", http.StatusFound)
