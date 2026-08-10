@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"github.com/Rq4n/autopost/internal/service"
@@ -55,14 +56,16 @@ func (h *UserHandler) getAuthCallbackFunction(w http.ResponseWriter, r *http.Req
 
 	session, err := gothic.Store.Get(r, "session")
 	if err != nil {
+		log.Printf("failed to get session %v", err)
 		http.Error(w, "sessions error", http.StatusInternalServerError)
 		return
 	}
 
-	session.Values["user_id"] = user.ID
+	session.Values["user_id"] = user.ID.String()
 
 	err = session.Save(r, w)
 	if err != nil {
+		log.Printf("failed to save session %v", err)
 		http.Error(w, "sessions error", http.StatusInternalServerError)
 		return
 	}

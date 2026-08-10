@@ -2,6 +2,7 @@
 package auth
 
 import (
+	"net/http"
 	"os"
 
 	"github.com/Rq4n/autopost/internal/config"
@@ -27,6 +28,11 @@ func NewAuth(cfg config.GoogleOAuth, twitter config.TwitterOAuth) {
 	store.Options.Path = "/"
 	store.Options.HttpOnly = true // HttpOnly should always be enabled
 	store.Options.Secure = isProd
+	if isProd {
+		store.Options.SameSite = http.SameSiteNoneMode
+	} else {
+		store.Options.SameSite = http.SameSiteLaxMode
+	}
 
 	gothic.Store = store
 
@@ -34,19 +40,4 @@ func NewAuth(cfg config.GoogleOAuth, twitter config.TwitterOAuth) {
 		twitterv2.New(os.Getenv("TWITTER_CLIENT_ID"), os.Getenv("TWITTER_CLIENT_SECRET"), "http://localhost:8080/auth/twitterv2/callback"),
 		google.New(os.Getenv("GOOGLE_CLIENT_ID"), os.Getenv("GOOGLE_CLIENT_SECRET"), "http://localhost:8080/auth/google/callback"),
 	)
-
-	// goth.UseProviders(
-	// 	google.New(
-	// 		cfg.ClientID,
-	// 		cfg.ClientSecret,
-	// 		cfg.RedirectURL,
-	// 		cfg.Scopes...,
-	// 	),
-	//
-	// 	twitterv2.New(
-	// 		twitter.ClientID,
-	// 		twitter.ClientSecret,
-	// 		"http://localhost:8080/auth/twitterv2/callback",
-	// 	),
-	// )
 }
