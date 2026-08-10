@@ -49,7 +49,9 @@ func main() {
 	repo := store.New(pool)
 
 	postService := service.NewPostService(repo)
+	userService := service.NewUserService(repo)
 	postHandler := NewPostsHandler(*postService)
+	userHandler := NewUserHandler(*userService)
 
 	defer pool.Close()
 	log.Print("connection pool established")
@@ -62,6 +64,7 @@ func main() {
 		},
 		Handler: Handler{
 			handlePost: postHandler,
+			handleUser: userHandler,
 		},
 	}
 

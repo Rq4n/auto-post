@@ -28,6 +28,7 @@ type dbconfig struct {
 
 type Handler struct {
 	handlePost *PostHandler
+	handleUser *UserHandler
 }
 
 func (a *app) mount() http.Handler {
@@ -49,7 +50,7 @@ func (a *app) mount() http.Handler {
 
 	r.Post("/api/post", a.handlePost.handleCreateNewPost)
 
-	r.Get("/auth/{provider}/callback", getAuthCallbackFunction)
+	r.Get("/auth/{provider}/callback", a.handleUser.getAuthCallbackFunction)
 	r.Get("/auth/{provider}", beginAuthProviderCallback)
 
 	return r
