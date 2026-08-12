@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Rq4n/autopost/internal/auth"
 	"github.com/Rq4n/autopost/pkg/db"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
@@ -48,7 +49,10 @@ func (a *app) mount() http.Handler {
 		w.Write([]byte("status: ok"))
 	})
 
-	r.Post("/api/post", a.handlePost.handleCreateNewPost)
+	r.Route("/v1/api", func(r chi.Router) {
+		r.Use(auth.AuthMiddleware)
+		r.Post("/post", a.handlePost.handleCreateNewPost)
+	})
 
 	r.Get("/auth/{provider}", beginAuthProviderCallback)
 	r.Get("/auth/{provider}/callback", a.handleUser.getAuthCallbackFunction)
