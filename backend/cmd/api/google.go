@@ -70,5 +70,6 @@ func (h *UserHandler) getAuthCallbackFunction(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	log.Printf("user created %v", googleUser.UserID)
 	http.Redirect(w, r, "http://localhost:5173", http.StatusFound)
 }
