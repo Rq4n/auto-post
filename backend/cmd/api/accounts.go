@@ -22,10 +22,9 @@ func NewSocialHandler(socialService service.SocialService) *SocialHandler {
 
 type AccountPayload struct {
 	provider string
-	test     string
 }
 
-func (s *SocialHandler) ConnectNewSocialAccount(w http.ResponseWriter, r *http.Request) {
+func (s *SocialHandler) handleConnectNewSocialAccount(w http.ResponseWriter, r *http.Request) {
 	// Pega o user_id colocado pelo AuthMiddleware
 	userID, ok := r.Context().Value("userID").(string)
 	if !ok {

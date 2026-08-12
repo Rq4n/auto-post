@@ -53,8 +53,11 @@ func main() {
 
 	postService := service.NewPostService(repo)
 	userService := service.NewUserService(repo)
+	socialService := service.NewSocialService(repo)
+
 	postHandler := NewPostsHandler(*postService)
 	userHandler := NewUserHandler(*userService)
+	socialHandler := NewSocialHandler(*socialService)
 
 	defer pool.Close()
 	log.Print("connection pool established")
@@ -66,8 +69,9 @@ func main() {
 			dbc: &dbConfig,
 		},
 		Handler: Handler{
-			handlePost: postHandler,
-			handleUser: userHandler,
+			handlePost:   postHandler,
+			handleUser:   userHandler,
+			handleSocial: socialHandler,
 		},
 	}
 
