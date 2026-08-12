@@ -7,16 +7,23 @@ package store
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const connectNewProvider = `-- name: ConnectNewProvider :one
-INSERT INTO social_connections (provider)
-VALUES($1)
+INSERT INTO social_connections (user_id, provider)
+VALUES($1, $2)
 RETURNING id, user_id, provider, created_at, updated_at
 `
 
-func (q *Queries) ConnectNewProvider(ctx context.Context, provider string) (SocialConnection, error) {
-	row := q.db.QueryRow(ctx, connectNewProvider, provider)
+type ConnectNewProviderParams struct {
+	UserID   pgtype.UUID
+	Provider string
+}
+
+func (q *Queries) ConnectNewProvider(ctx context.Context, arg ConnectNewProviderParams) (SocialConnection, error) {
+	row := q.db.QueryRow(ctx, connectNewProvider, arg.UserID, arg.Provider)
 	var i SocialConnection
 	err := row.Scan(
 		&i.ID,
