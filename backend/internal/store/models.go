@@ -10,6 +10,7 @@ import (
 
 type Post struct {
 	ID        pgtype.UUID
+	UserID    pgtype.UUID
 	Title     string
 	Content   string
 	CreatedAt pgtype.Timestamp
@@ -18,6 +19,7 @@ type Post struct {
 
 type SocialConnection struct {
 	ID        pgtype.UUID
+	UserID    pgtype.UUID
 	Provider  string
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp

@@ -12,7 +12,7 @@ import (
 const connectNewProvider = `-- name: ConnectNewProvider :one
 INSERT INTO social_connections (provider)
 VALUES($1)
-RETURNING id, provider, created_at, updated_at
+RETURNING id, user_id, provider, created_at, updated_at
 `
 
 func (q *Queries) ConnectNewProvider(ctx context.Context, provider string) (SocialConnection, error) {
@@ -20,6 +20,7 @@ func (q *Queries) ConnectNewProvider(ctx context.Context, provider string) (Soci
 	var i SocialConnection
 	err := row.Scan(
 		&i.ID,
+		&i.UserID,
 		&i.Provider,
 		&i.CreatedAt,
 		&i.UpdatedAt,

@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/Rq4n/autopost/internal/store"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type PostService struct {
@@ -18,8 +19,9 @@ func NewPostService(store store.Querier) *PostService {
 	}
 }
 
-func (s *PostService) CreateNewPost(ctx context.Context, title string, content string) (*store.Post, error) {
+func (s *PostService) CreateNewPost(ctx context.Context, userID pgtype.UUID, title string, content string) (*store.Post, error) {
 	arg := store.CreateNewPostsParams{
+		UserID:  userID,
 		Title:   title,
 		Content: content,
 	}

@@ -34,12 +34,11 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 
 const getUserByGoogleID = `-- name: GetUserByGoogleID :one
 SELECT id, google_id, email, created_at FROM USERS
-WHERE email = $1
-ORDER BY created_at DESC
+WHERE google_id = $1
 `
 
-func (q *Queries) GetUserByGoogleID(ctx context.Context, email string) (User, error) {
-	row := q.db.QueryRow(ctx, getUserByGoogleID, email)
+func (q *Queries) GetUserByGoogleID(ctx context.Context, googleID string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByGoogleID, googleID)
 	var i User
 	err := row.Scan(
 		&i.ID,

@@ -7,24 +7,28 @@ package store
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createNewPosts = `-- name: CreateNewPosts :one
-INSERT INTO posts (title, content)
-VALUES ($1, $2)
-RETURNING id, title, content, created_at, updated_at
+INSERT INTO posts (user_id,title, content)
+VALUES ($1, $2, $3)
+RETURNING id, user_id, title, content, created_at, updated_at
 `
 
 type CreateNewPostsParams struct {
+	UserID  pgtype.UUID
 	Title   string
 	Content string
 }
 
 func (q *Queries) CreateNewPosts(ctx context.Context, arg CreateNewPostsParams) (Post, error) {
-	row := q.db.QueryRow(ctx, createNewPosts, arg.Title, arg.Content)
+	row := q.db.QueryRow(ctx, createNewPosts, arg.UserID, arg.Title, arg.Content)
 	var i Post
 	err := row.Scan(
 		&i.ID,
+		&i.UserID,
 		&i.Title,
 		&i.Content,
 		&i.CreatedAt,

@@ -15,8 +15,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		userID, ok := session.Values["user_id"]
-		if !ok {
+		userID, ok := session.Values["user_id"].(string)
+		if !ok || userID == "" {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}

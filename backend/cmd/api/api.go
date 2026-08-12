@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
@@ -50,18 +49,9 @@ func (a *app) mount() http.Handler {
 		w.Write([]byte("status: ok"))
 	})
 
-	r.Route("/v1/api", func(r chi.Router) {
+	r.Route("/v1", func(r chi.Router) {
 		r.Use(auth.AuthMiddleware)
 		r.Post("/post", a.handlePost.handleCreateNewPost)
-	})
-
-	r.With(auth.AuthMiddleware).Get("/api/me", func(w http.ResponseWriter, r *http.Request) {
-		userID := r.Context().Value("user_id")
-
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]any{
-			"user_id": userID,
-		})
 	})
 
 	r.Get("/auth/{provider}", beginAuthProviderCallback)
