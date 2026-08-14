@@ -43,15 +43,15 @@ func (s *SocialHandler) handleConnectNewSocialAccount(w http.ResponseWriter, r *
 		Bytes: parseID,
 		Valid: true,
 	}
-	var payload AccountPayload
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+	var req AccountPayload
+	if err := json.NewDecoder(r.Body).Decode(&req.provider); err != nil {
 		http.Error(w, "invalid payload", http.StatusBadRequest)
 		return
 	}
 	conn, err := s.socialService.ConnectNewSocial(
 		r.Context(),
 		sID,
-		payload.provider,
+		req.provider,
 	)
 	if err != nil {
 		log.Printf("failed to connect account %v", err)

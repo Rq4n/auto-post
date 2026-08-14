@@ -19,7 +19,7 @@ func NewSocialService(store store.Querier) *SocialService {
 	}
 }
 
-func (s *SocialService) ConnectNewSocial(ctx context.Context, userID pgtype.UUID, provider string) (*store.SocialConnection, error) {
+func (s *SocialService) ConnectNewProvider(ctx context.Context, userID pgtype.UUID, provider string) (*store.SocialConnection, error) {
 	arg := store.ConnectNewProviderParams{
 		UserID:   userID,
 		Provider: provider,

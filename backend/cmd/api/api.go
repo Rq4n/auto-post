@@ -30,7 +30,7 @@ type dbconfig struct {
 type Handler struct {
 	handlePost    *PostHandler
 	handleUser    *UserHandler
-	handlerSocial *SocialHandler
+	handleSocial *SocialHandler
 }
 
 func (a *app) mount() http.Handler {
@@ -53,7 +53,7 @@ func (a *app) mount() http.Handler {
 	r.Route("/v1", func(r chi.Router) {
 		r.Use(auth.AuthMiddleware)
 		r.Post("/post", a.handlePost.handleCreateNewPost)
-		r.Post("/social", a.handlerSocial.handleConnectNewSocialAccount)
+		r.Post("/social", a.handleSocial.handleConnectNewSocialAccount)
 	})
 
 	r.Get("/auth/{provider}", beginAuthProviderCallback)
