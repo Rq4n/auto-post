@@ -20,11 +20,11 @@ func NewSocialHandler(socialService service.SocialService) *SocialHandler {
 	}
 }
 
-type AccountPayload struct {
-	provider string
+type ProviderPayload struct {
+	Provider string
 }
 
-func (s *SocialHandler) handleConnectNewSocialAccount(w http.ResponseWriter, r *http.Request) {
+func (s *SocialHandler) handleConnectNewProvider(w http.ResponseWriter, r *http.Request) {
 	// Pega o user_id colocado pelo AuthMiddleware
 	userID, ok := r.Context().Value("userID").(string)
 	if !ok {
@@ -43,15 +43,15 @@ func (s *SocialHandler) handleConnectNewSocialAccount(w http.ResponseWriter, r *
 		Bytes: parseID,
 		Valid: true,
 	}
-	var req AccountPayload
-	if err := json.NewDecoder(r.Body).Decode(&req.provider); err != nil {
+	var req ProviderPayload
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "invalid payload", http.StatusBadRequest)
 		return
 	}
-	conn, err := s.socialService.ConnectNewSocial(
+	conn, err := s.socialService.ConnectNewProvider(
 		r.Context(),
 		sID,
-		req.provider,
+		req.Provider,
 	)
 	if err != nil {
 		log.Printf("failed to connect account %v", err)

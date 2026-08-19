@@ -17,6 +17,16 @@ type Post struct {
 	UpdatedAt pgtype.Timestamp
 }
 
+type Publisher struct {
+	ID          pgtype.UUID
+	UserID      pgtype.UUID
+	PostID      pgtype.UUID
+	Status      string
+	ScheduledAt pgtype.Timestamptz
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+}
+
 type SocialConnection struct {
 	ID        pgtype.UUID
 	UserID    pgtype.UUID

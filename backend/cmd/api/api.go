@@ -1,3 +1,4 @@
+// Package
 package main
 
 import (
@@ -28,9 +29,10 @@ type dbconfig struct {
 }
 
 type Handler struct {
-	handlePost    *PostHandler
-	handleUser    *UserHandler
-	handleSocial *SocialHandler
+	handlePost      *PostHandler
+	handleUser      *UserHandler
+	handleSocial    *SocialHandler
+	handlePublisher *PublisherHandler
 }
 
 func (a *app) mount() http.Handler {
@@ -52,8 +54,11 @@ func (a *app) mount() http.Handler {
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Use(auth.AuthMiddleware)
-		r.Post("/post", a.handlePost.handleCreateNewPost)
-		r.Post("/social", a.handleSocial.handleConnectNewSocialAccount)
+		r.Post("/post", a.handlePost.handleCreateNewPost) // create the post (title, content), may vary depending on social media
+
+		// should handle the provider selection such as twitter etc.
+		// frontend checkbox selects providers with checkbox and make GET request /v1/provider 
+		r.Post("/social", a.handleSocial.handleConnectNewProvider) 
 	})
 
 	r.Get("/auth/{provider}", beginAuthProviderCallback)
