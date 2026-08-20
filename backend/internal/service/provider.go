@@ -7,6 +7,7 @@ import (
 
 	"github.com/Rq4n/autopost/internal/store"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/markbates/goth"
 )
 
 type SocialService struct {
@@ -19,15 +20,25 @@ func NewSocialService(store store.Querier) *SocialService {
 	}
 }
 
-func (s *SocialService) ConnectNewProvider(ctx context.Context, userID pgtype.UUID, provider string) (*store.SocialConnection, error) {
+func (s *SocialService) ConnectNewProvider(
+	ctx context.Context,
+	userID pgtype.UUID,
+	provider string,
+	pvUser goth.User,
+) (*store.SocialConnection, error) {
 	arg := store.ConnectNewProviderParams{
-		UserID:   userID,
-		Provider: provider,
+		UserID:         userID,
+		Provider:       provider,
+		ProviderUserID: pvUser.UserID,
+		AccessToken:    pvUser.AccessToken,
+		RefreshToken:   pvUser.RefreshToken,
 	}
+
 	social, err := s.store.ConnectNewProvider(ctx, arg)
 	if err != nil {
-		log.Printf("failed to connect new provider %v", err)
-		return nil, fmt.Errorf("failed to start provider %w", err)
+		log.Printf("failed to create social connection: %v", err)
+		return nil, fmt.Errorf("failed to create social connection: %w", err)
 	}
+
 	return &social, nil
 }
