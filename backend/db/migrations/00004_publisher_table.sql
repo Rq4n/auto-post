@@ -1,3 +1,4 @@
+-- +goose Up
 CREATE TABLE IF NOT EXISTS publishers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
@@ -20,4 +21,5 @@ CREATE TABLE IF NOT EXISTS publishers (
 );
 
 -- +goose Down
+
 DROP TABLE IF EXISTS publishers;

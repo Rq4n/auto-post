@@ -12,23 +12,45 @@ import (
 )
 
 const connectNewProvider = `-- name: ConnectNewProvider :one
-INSERT INTO social_connections (user_id, provider)
-VALUES($1, $2)
-RETURNING id, user_id, provider, created_at, updated_at
+INSERT INTO social_connections (
+  user_id,
+  provider,
+  provider_user_id,
+  access_token,
+  refresh_token,
+  expires_at
+)
+VALUES($1, $2, $3, $4, $5, $6)
+RETURNING id, user_id, provider, provider_user_id, access_token, refresh_token, expires_at, created_at, updated_at
 `
 
 type ConnectNewProviderParams struct {
-	UserID   pgtype.UUID
-	Provider string
+	UserID         pgtype.UUID
+	Provider       string
+	ProviderUserID string
+	AccessToken    string
+	RefreshToken   pgtype.Text
+	ExpiresAt      pgtype.Timestamptz
 }
 
 func (q *Queries) ConnectNewProvider(ctx context.Context, arg ConnectNewProviderParams) (SocialConnection, error) {
-	row := q.db.QueryRow(ctx, connectNewProvider, arg.UserID, arg.Provider)
+	row := q.db.QueryRow(ctx, connectNewProvider,
+		arg.UserID,
+		arg.Provider,
+		arg.ProviderUserID,
+		arg.AccessToken,
+		arg.RefreshToken,
+		arg.ExpiresAt,
+	)
 	var i SocialConnection
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
 		&i.Provider,
+		&i.ProviderUserID,
+		&i.AccessToken,
+		&i.RefreshToken,
+		&i.ExpiresAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

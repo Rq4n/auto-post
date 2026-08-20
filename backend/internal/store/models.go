@@ -28,11 +28,15 @@ type Publisher struct {
 }
 
 type SocialConnection struct {
-	ID        pgtype.UUID
-	UserID    pgtype.UUID
-	Provider  string
-	CreatedAt pgtype.Timestamp
-	UpdatedAt pgtype.Timestamp
+	ID             pgtype.UUID
+	UserID         pgtype.UUID
+	Provider       string
+	ProviderUserID string
+	AccessToken    string
+	RefreshToken   pgtype.Text
+	ExpiresAt      pgtype.Timestamptz
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
 }
 
 type User struct {

@@ -31,7 +31,14 @@ func (s *SocialService) ConnectNewProvider(
 		Provider:       provider,
 		ProviderUserID: pvUser.UserID,
 		AccessToken:    pvUser.AccessToken,
-		RefreshToken:   pvUser.RefreshToken,
+		RefreshToken: pgtype.Text{
+			String: pvUser.RefreshToken,
+			Valid:  pvUser.RefreshToken != "",
+		},
+		ExpiresAt: pgtype.Timestamptz{
+			Time:  pvUser.ExpiresAt,
+			Valid: pvUser.ExpiresAt.IsZero(),
+		},
 	}
 
 	social, err := s.store.ConnectNewProvider(ctx, arg)
