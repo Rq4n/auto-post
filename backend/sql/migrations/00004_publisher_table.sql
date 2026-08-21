@@ -2,8 +2,8 @@
 CREATE TABLE IF NOT EXISTS publishers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     post_id UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 
     status TEXT NOT NULL DEFAULT 'pending'
         CHECK (status IN (
@@ -15,7 +15,6 @@ CREATE TABLE IF NOT EXISTS publishers (
         )),
 
     scheduled_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    published_at TIMESTAMPZ NOT NULL DEFAULT NOW(),
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
