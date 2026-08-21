@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS publishers (
         )),
 
     scheduled_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    published_at TIMESTAMPZ NOT NULL DEFAULT NOW(),
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

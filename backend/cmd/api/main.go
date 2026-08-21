@@ -7,6 +7,7 @@ import (
 
 	"github.com/Rq4n/autopost/internal/auth"
 	"github.com/Rq4n/autopost/internal/config"
+	"github.com/Rq4n/autopost/internal/handler"
 	"github.com/Rq4n/autopost/internal/service"
 	"github.com/Rq4n/autopost/internal/store"
 	"github.com/Rq4n/autopost/pkg/db"
@@ -51,16 +52,6 @@ func main() {
 	}
 	repo := store.New(pool)
 
-	postService := service.NewPostService(repo)
-	userService := service.NewUserService(repo)
-	socialService := service.NewSocialService(repo)
-	publishService := service.NewPublisherService(repo)
-
-	postHandler := NewPostsHandler(*postService)
-	userHandler := NewUserHandler(*userService)
-	socialHandler := NewSocialHandler(*socialService)
-	publishHandler := NewPublisherHandler(*publishService)
-
 	defer pool.Close()
 	log.Print("connection pool established")
 
@@ -71,10 +62,10 @@ func main() {
 			dbc: &dbConfig,
 		},
 		Handler: Handler{
-			handlePost:      postHandler,
-			handleUser:      userHandler,
-			handleSocial:    socialHandler,
-			handlePublisher: publishHandler,
+			handlePost: *handler.NewPostsHandler(*service.NewPostService(repo)),
+			handleUser: *handler.NewUserHandler(*service.NewUserService(repo)),
+			handleSocial: *handler.NewSocialHandler(*service.NewSocialService(repo)),
+			handlePublisher: *handler.NewPublisherHandler(*service.NewPublisherService(repo)),
 		},
 	}
 

@@ -1,4 +1,4 @@
-// Package
+// Package main
 package main
 
 import (
@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Rq4n/autopost/internal/auth"
+	"github.com/Rq4n/autopost/internal/handler"
 	"github.com/Rq4n/autopost/pkg/db"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
@@ -29,10 +30,10 @@ type dbconfig struct {
 }
 
 type Handler struct {
-	handlePost      *PostHandler
-	handleUser      *UserHandler
-	handleSocial    *SocialHandler
-	handlePublisher *PublisherHandler
+	handlePost      handler.PostHandler
+	handleUser      handler.UserHandler
+	handleSocial    handler.SocialHandler
+	handlePublisher handler.PublisherHandler
 }
 
 func (a *app) mount() http.Handler {
@@ -54,15 +55,11 @@ func (a *app) mount() http.Handler {
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Use(auth.AuthMiddleware)
-		r.Post("/post", a.handlePost.handleCreateNewPost) // create the post (title, content), may vary depending on social media
-
-		// should handle the provider selection such as twitter etc.
-		// frontend checkbox selects providers with checkbox and make GET request /v1/provider 
-		r.Post("/social", a.handleSocial.handleConnectNewProvider) 
+		r.Post("/post", a.handlePost.CreateNewPost)
 	})
 
-	r.Get("/auth/{provider}", beginAuthProviderCallback)
-	r.Get("/auth/{provider}/callback", a.handleUser.getAuthCallbackFunction)
+	r.Get("/auth/{provider}", handler.BeginAuthProviderCallback)
+	r.Get("/auth/{provider}/callback", a.handleUser.GetAuthCallback)
 
 	return r
 }

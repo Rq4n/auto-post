@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"encoding/json"
@@ -25,7 +25,7 @@ type PostsPayload struct {
 	Content string `json:"content"`
 }
 
-func (p *PostHandler) handleCreateNewPost(w http.ResponseWriter, r *http.Request) {
+func (p *PostHandler) CreateNewPost(w http.ResponseWriter, r *http.Request) {
 	// Pega o user_id colocado pelo AuthMiddleware
 	userID, ok := r.Context().Value("userID").(string)
 	if !ok {

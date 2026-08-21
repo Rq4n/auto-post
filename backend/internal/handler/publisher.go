@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"net/http"
@@ -16,7 +16,7 @@ func NewPublisherHandler(publisherService service.PublisherService) *PublisherHa
 	}
 }
 
-func (s *PublisherHandler) handleStartNewPublisher(w http.ResponseWriter, r *http.Request) {
+func (s *PublisherHandler) CreatePublisher(w http.ResponseWriter, r *http.Request) {
 	// if err := json.NewDecoder(r.Body).Decode(r); err != nil {
 	// 	http.Error(w, "invalid payload", http.StatusBadRequest)
 	// 	return

@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"context"
@@ -20,13 +20,13 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 	}
 }
 
-func beginAuthProviderCallback(w http.ResponseWriter, r *http.Request) {
+func BeginAuthProviderCallback(w http.ResponseWriter, r *http.Request) {
 	provider := chi.URLParam(r, "provider")
 	r = r.WithContext(context.WithValue(r.Context(), "provider", provider))
 	gothic.BeginAuthHandler(w, r)
 }
 
-func (h *UserHandler) getAuthCallbackFunction(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) GetAuthCallback(w http.ResponseWriter, r *http.Request) {
 	provider := chi.URLParam(r, "provider")
 
 	ctx := context.WithValue(r.Context(), "provider", provider)

@@ -1,8 +1,8 @@
-package main
+// Package handler
+package handler
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"net/http"
 
@@ -23,72 +23,35 @@ func NewSocialHandler(socialService service.SocialService) *SocialHandler {
 	}
 }
 
-type ProviderPayload struct {
-	Provider string
-}
-
 func (s *SocialHandler) BeginProviderAuth(w http.ResponseWriter, r *http.Request) {
 	provider := chi.URLParam(r, "provider")
 
-	r = r.WithContext(context.WithValue(r.Context(), "provider", provider))
-
-	gothic.BeginAuthHandler(w, r)
-}
-
-func (s *SocialHandler) handleConnectNewProvider(w http.ResponseWriter, r *http.Request) {
-	var req ProviderPayload
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "invalid payload", http.StatusBadRequest)
-		return
-	}
-
-	var gothProvider string
-
-	switch req.Provider {
-	case "twitter":
-		gothProvider = "twitterv2"
-
-	case "linkedin":
-		gothProvider = "linkedin"
-
-	case "bluesky":
-		gothProvider = "bluesky"
-
-	default:
-		http.Error(w, "unsupported provider", http.StatusBadRequest)
-		return
-	}
-	r = r.WithContext(context.WithValue(r.Context(), "provider", gothProvider))
-
-	gothic.BeginAuthHandler(w, r)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-}
-
-func (s *SocialHandler) handleProviderCallback(w http.ResponseWriter, r *http.Request) {
-	provider := chi.URLParam(r, "provider")
-
-	// Converte o provider da URL para o nome usado pelo Goth.
 	var gothProvider string
 
 	switch provider {
 	case "twitter":
 		gothProvider = "twitterv2"
-
 	case "linkedin":
 		gothProvider = "linkedin"
-
 	case "bluesky":
 		gothProvider = "bluesky"
-
 	default:
 		http.Error(w, "unsupported provider", http.StatusBadRequest)
 		return
 	}
 
+	r = r.WithContext(
+		context.WithValue(r.Context(), "provider", gothProvider),
+	)
+
+	gothic.BeginAuthHandler(w, r)
+}
+
+func (s *SocialHandler) handleProviderCallback(w http.ResponseWriter, r *http.Request) {
+	provider := chi.URLParam(r, "provider")
+
 	// Informa ao Goth qual provider está sendo finalizado.
-	ctx := context.WithValue(r.Context(), "provider", gothProvider)
+	ctx := context.WithValue(r.Context(), "provider", provider)
 
 	r = r.WithContext(ctx)
 
@@ -129,10 +92,10 @@ func (s *SocialHandler) handleProviderCallback(w http.ResponseWriter, r *http.Re
 	// pvUser.ExpiresAt
 	//
 	// Service salva tudo
-	_, err = s.socialService.ConnectNewProvider( r.Context(), sID, provider, pvUser)
+	_, err = s.socialService.ConnectNewProvider(r.Context(), sID, provider, pvUser)
 	if err != nil {
 		log.Printf("failed to create social connection: %v", err)
-		http.Error( w, "failed to save social connection", http.StatusInternalServerError)
+		http.Error(w, "failed to save social connection", http.StatusInternalServerError)
 		return
 	}
 
