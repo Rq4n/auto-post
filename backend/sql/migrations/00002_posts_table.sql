@@ -9,4 +9,4 @@ CREATE TABLE IF NOT EXISTS posts (
 );
 
 -- +goose Down
-DROP TABLE posts;
+DROP TABLE IF EXISTS posts;

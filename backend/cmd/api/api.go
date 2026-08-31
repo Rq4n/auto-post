@@ -32,8 +32,8 @@ type dbconfig struct {
 type Handler struct {
 	handlePost      handler.PostHandler
 	handleUser      handler.UserHandler
-	handleSocial    handler.SocialHandler
 	handlePublisher handler.PublisherHandler
+	handleTwitter   handler.TwitterHandler
 }
 
 func (a *app) mount() http.Handler {
@@ -58,8 +58,18 @@ func (a *app) mount() http.Handler {
 		r.Post("/post", a.handlePost.CreateNewPost)
 	})
 
+	// Google OAuth provider
+	// Futuramente podendo ser agrupado em uma rota
+	// Para autenticacao com mais providers alem de Google OAuth
 	r.Get("/auth/{provider}", handler.BeginAuthProviderCallback)
 	r.Get("/auth/{provider}/callback", a.handleUser.GetAuthCallback)
+
+	r.Route("/social/connections", func(r chi.Router) {
+		// twitter provider iniciar auth e callback routes
+		r.Get("{provider}", a.handleTwitter.BeginProviderAuth)
+		r.Get("{provider}/callback", a.handleTwitter.HandleTwitterCallback)
+		// Outros providers que devem ser criados futuramente
+	})
 
 	return r
 }

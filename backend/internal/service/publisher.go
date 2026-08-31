@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Rq4n/autopost/internal/store"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -18,19 +18,13 @@ func NewPublisherService(store store.Querier) *PublisherService {
 	}
 }
 
-func (s *PublisherService) FetchPendingJobs(ctx context.Context) (*store.Publisher, error) {
-	_, err := s.store.FetchPendingJobs(ctx)
+func (s *PublisherService) CreatePublisherJob(ctx context.Context, postID, userID uuid.UUID) ([]store.Publisher, error) {
+	pb, err := s.store.CreatePublisherJob(ctx, store.CreatePublisherJobParams{
+		PostID: pgtype.UUID{Bytes: postID, Valid: true},
+		UserID: pgtype.UUID{Bytes: userID, Valid: true},
+	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to start new publisher %w", err)
+		return nil, err
 	}
-	return nil, nil
-}
-
-func (s *PublisherService) UpdateJobAsProcessing(ctx context.Context, id pgtype.UUID) (*store.Publisher, error) {
-	// _, err := s.store.UpdateJobAsProcessing(ctx, id)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to update job as processing %w", err)
-	// }
-
-	return nil, nil
+	return pb, nil
 }

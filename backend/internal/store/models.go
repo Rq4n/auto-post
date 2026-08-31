@@ -18,13 +18,13 @@ type Post struct {
 }
 
 type Publisher struct {
-	ID          pgtype.UUID
-	UserID      pgtype.UUID
-	PostID      pgtype.UUID
-	Status      string
-	ScheduledAt pgtype.Timestamptz
-	CreatedAt   pgtype.Timestamptz
-	UpdatedAt   pgtype.Timestamptz
+	ID                 pgtype.UUID
+	PostID             pgtype.UUID
+	UserID             pgtype.UUID
+	SocialConnectionID pgtype.UUID
+	Status             string
+	CreatedAt          pgtype.Timestamptz
+	UpdatedAt          pgtype.Timestamptz
 }
 
 type SocialConnection struct {
@@ -43,5 +43,6 @@ type User struct {
 	ID        pgtype.UUID
 	GoogleID  string
 	Email     string
-	CreatedAt pgtype.Timestamp
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
 }

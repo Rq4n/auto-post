@@ -8,20 +8,24 @@ import (
 type Handler struct {
 	handlePost      *PostHandler
 	handleUser      *UserHandler
-	handleSocial    *SocialHandler
+	handleTwitter    *TwitterHandler
 	handlePublisher *PublisherHandler
 }
 
 func NewHandler(repo store.Querier) *Handler {
 	postService := service.NewPostService(repo)
 	userService := service.NewUserService(repo)
-	socialService := service.NewSocialService(repo)
 	publisherService := service.NewPublisherService(repo)
+
+	// service usado por multiplos providers
+	socialService := service.NewSocialService(repo)
 
 	return &Handler{
 		handlePost:      NewPostsHandler(*postService),
 		handleUser:      NewUserHandler(*userService),
-		handleSocial:    NewSocialHandler(*socialService),
 		handlePublisher: NewPublisherHandler(*publisherService),
+
+		// providers
+		handleTwitter:    NewTwitterHandler(*socialService),
 	}
 }

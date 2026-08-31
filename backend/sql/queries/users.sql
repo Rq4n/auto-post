@@ -6,3 +6,4 @@ RETURNING *;
 -- name: GetUserByGoogleID :one
 SELECT * FROM USERS
 WHERE google_id = $1;
+

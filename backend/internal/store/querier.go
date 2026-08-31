@@ -13,12 +13,12 @@ import (
 type Querier interface {
 	ConnectNewProvider(ctx context.Context, arg ConnectNewProviderParams) (SocialConnection, error)
 	CreateNewPosts(ctx context.Context, arg CreateNewPostsParams) (Post, error)
+	CreatePublisherJob(ctx context.Context, arg CreatePublisherJobParams) ([]Publisher, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
-	FetchPendingJobs(ctx context.Context) ([]Publisher, error)
+	GetPublishersByPostID(ctx context.Context, postID pgtype.UUID) ([]Publisher, error)
 	GetUserByGoogleID(ctx context.Context, googleID string) (User, error)
-	UpdateJobAsCompleted(ctx context.Context, id pgtype.UUID) error
-	UpdateJobAsFailed(ctx context.Context, id pgtype.UUID) error
-	UpdateJobAsProcessing(ctx context.Context, id pgtype.UUID) error
+	UpdatePublisherAsCompleted(ctx context.Context, id pgtype.UUID) error
+	UpdatePublisherAsFailed(ctx context.Context, id pgtype.UUID) error
 }
 
 var _ Querier = (*Queries)(nil)

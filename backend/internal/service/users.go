@@ -36,3 +36,8 @@ func (s *UserService) GetUserByGoogleID(ctx context.Context, googleID string) (*
 
 	return &user, nil
 }
+
+// buscar social_connections do usuario no banco
+// join tables  social_connections -> user.id -> provider
+
+	

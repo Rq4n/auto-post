@@ -3,6 +3,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -13,28 +14,33 @@ import (
 	"github.com/markbates/goth/gothic"
 )
 
-type SocialHandler struct {
+type TwitterHandler struct {
 	socialService service.SocialService
 }
 
-func NewSocialHandler(socialService service.SocialService) *SocialHandler {
-	return &SocialHandler{
+func NewTwitterHandler(socialService service.SocialService) *TwitterHandler {
+	return &TwitterHandler{
 		socialService: socialService,
 	}
 }
 
-func (s *SocialHandler) BeginProviderAuth(w http.ResponseWriter, r *http.Request) {
+func mapToGothProvider(provider string) (string, error) {
+	switch provider {
+	case "twitter":
+		return "twitterv2", nil
+	default:
+		return "", fmt.Errorf("unsupported provider: %s", provider)
+	}
+}
+
+func (t *TwitterHandler) BeginProviderAuth(w http.ResponseWriter, r *http.Request) {
 	provider := chi.URLParam(r, "provider")
 
-	var gothProvider string
+	gothProvider := "twitterv2"
 
 	switch provider {
 	case "twitter":
 		gothProvider = "twitterv2"
-	case "linkedin":
-		gothProvider = "linkedin"
-	case "bluesky":
-		gothProvider = "bluesky"
 	default:
 		http.Error(w, "unsupported provider", http.StatusBadRequest)
 		return
@@ -47,11 +53,16 @@ func (s *SocialHandler) BeginProviderAuth(w http.ResponseWriter, r *http.Request
 	gothic.BeginAuthHandler(w, r)
 }
 
-func (s *SocialHandler) handleProviderCallback(w http.ResponseWriter, r *http.Request) {
+func (t *TwitterHandler) HandleTwitterCallback(w http.ResponseWriter, r *http.Request) {
 	provider := chi.URLParam(r, "provider")
+	gothProvider, err := mapToGothProvider(provider)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	// Informa ao Goth qual provider está sendo finalizado.
-	ctx := context.WithValue(r.Context(), "provider", provider)
+	ctx := context.WithValue(r.Context(), "provider", gothProvider)
 
 	r = r.WithContext(ctx)
 
@@ -59,7 +70,7 @@ func (s *SocialHandler) handleProviderCallback(w http.ResponseWriter, r *http.Re
 	// Aqui o Goth retorna os dados da conta social.
 	pvUser, err := gothic.CompleteUserAuth(w, r)
 	if err != nil {
-		log.Printf("failed to complete %s oauth: %v", provider, err)
+		log.Printf("failed to complete %s oauth: %v", gothProvider, err)
 		http.Error(w, "failed to complete oauth", http.StatusInternalServerError)
 		return
 	}
@@ -92,7 +103,7 @@ func (s *SocialHandler) handleProviderCallback(w http.ResponseWriter, r *http.Re
 	// pvUser.ExpiresAt
 	//
 	// Service salva tudo
-	_, err = s.socialService.ConnectNewProvider(r.Context(), sID, provider, pvUser)
+	_, err = t.socialService.ConnectNewProvider(r.Context(), sID, provider, pvUser)
 	if err != nil {
 		log.Printf("failed to create social connection: %v", err)
 		http.Error(w, "failed to save social connection", http.StatusInternalServerError)

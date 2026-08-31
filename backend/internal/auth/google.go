@@ -37,7 +37,7 @@ func NewAuth(cfg config.GoogleOAuth, twitter config.TwitterOAuth) {
 	gothic.Store = store
 
 	goth.UseProviders(
-		twitterv2.New(os.Getenv("TWITTER_CLIENT_ID"), os.Getenv("TWITTER_CLIENT_SECRET"), "http://localhost:8080/auth/twitterv2/callback"),
+		twitterv2.New(os.Getenv("TWITTER_CLIENT_ID"), os.Getenv("TWITTER_CLIENT_SECRET"), "http://127.0.0.1:8080/social/connections/twitter/callback"),
 		google.New(os.Getenv("GOOGLE_CLIENT_ID"), os.Getenv("GOOGLE_CLIENT_SECRET"), "http://localhost:8080/auth/google/callback"),
 	)
 }

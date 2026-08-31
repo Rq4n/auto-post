@@ -11,17 +11,21 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const fetchPendingJobs = `-- name: FetchPendingJobs :many
-SELECT id, user_id, post_id, status, scheduled_at, created_at, updated_at FROM publishers
-WHERE status = 'pending'
-  AND scheduled_at <= NOW()
-ORDER BY scheduled_at ASC
-FOR UPDATE SKIP LOCKED
-LIMIT 50
+const createPublisherJob = `-- name: CreatePublisherJob :many
+INSERT INTO publisher (post_id, user_id, social_connection_id, status)
+SELECT $1, $2, sc_id, 'pending'
+FROM unnest($3::uuid[]) AS sc_id
+RETURNING id, post_id, user_id, social_connection_id, status, created_at, updated_at
 `
 
-func (q *Queries) FetchPendingJobs(ctx context.Context) ([]Publisher, error) {
-	rows, err := q.db.Query(ctx, fetchPendingJobs)
+type CreatePublisherJobParams struct {
+	PostID  pgtype.UUID
+	UserID  pgtype.UUID
+	Column3 []pgtype.UUID
+}
+
+func (q *Queries) CreatePublisherJob(ctx context.Context, arg CreatePublisherJobParams) ([]Publisher, error) {
+	rows, err := q.db.Query(ctx, createPublisherJob, arg.PostID, arg.UserID, arg.Column3)
 	if err != nil {
 		return nil, err
 	}
@@ -31,10 +35,10 @@ func (q *Queries) FetchPendingJobs(ctx context.Context) ([]Publisher, error) {
 		var i Publisher
 		if err := rows.Scan(
 			&i.ID,
-			&i.UserID,
 			&i.PostID,
+			&i.UserID,
+			&i.SocialConnectionID,
 			&i.Status,
-			&i.ScheduledAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -48,39 +52,61 @@ func (q *Queries) FetchPendingJobs(ctx context.Context) ([]Publisher, error) {
 	return items, nil
 }
 
-const updateJobAsCompleted = `-- name: UpdateJobAsCompleted :exec
-UPDATE publishers
+const getPublishersByPostID = `-- name: GetPublishersByPostID :many
+SELECT id, post_id, user_id, social_connection_id, status, created_at, updated_at FROM publisher
+WHERE post_id = $1
+ORDER BY created_at ASC
+`
+
+func (q *Queries) GetPublishersByPostID(ctx context.Context, postID pgtype.UUID) ([]Publisher, error) {
+	rows, err := q.db.Query(ctx, getPublishersByPostID, postID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Publisher
+	for rows.Next() {
+		var i Publisher
+		if err := rows.Scan(
+			&i.ID,
+			&i.PostID,
+			&i.UserID,
+			&i.SocialConnectionID,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updatePublisherAsCompleted = `-- name: UpdatePublisherAsCompleted :exec
+UPDATE publisher
 SET status = 'completed',
-    published_at = NOW(),
+    publisher_at = NOW(),
     updated_at = NOW()
 WHERE id = $1
 `
 
-func (q *Queries) UpdateJobAsCompleted(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, updateJobAsCompleted, id)
+func (q *Queries) UpdatePublisherAsCompleted(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, updatePublisherAsCompleted, id)
 	return err
 }
 
-const updateJobAsFailed = `-- name: UpdateJobAsFailed :exec
-UPDATE publishers
+const updatePublisherAsFailed = `-- name: UpdatePublisherAsFailed :exec
+UPDATE publisher
 SET status = 'failed',
     updated_at = NOW()
 WHERE id = $1
 `
 
-func (q *Queries) UpdateJobAsFailed(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, updateJobAsFailed, id)
-	return err
-}
-
-const updateJobAsProcessing = `-- name: UpdateJobAsProcessing :exec
-UPDATE publishers
-SET status = 'processing',
-    updated_at = NOW()
-WHERE id = $1
-`
-
-func (q *Queries) UpdateJobAsProcessing(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, updateJobAsProcessing, id)
+func (q *Queries) UpdatePublisherAsFailed(ctx context.Context, id pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, updatePublisherAsFailed, id)
 	return err
 }

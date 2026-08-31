@@ -29,6 +29,7 @@ type TwitterOAuth struct {
 	ClientSecret string
 	ClientID     string
 	BearerToken  string
+	RedirectURL  string
 }
 
 type PostgresConfig struct {
@@ -61,6 +62,7 @@ func LoadConfig() (*Config, error) {
 				ClientSecret: os.Getenv("TWITTER_CLIENT_SECRET"),
 				ClientID:     os.Getenv("TWITTER_CLIENT_ID"),
 				BearerToken:  os.Getenv("TWITTER_BEARER_TOKEN"),
+				RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URL"),
 			},
 		},
 		DB: PostgresConfig{

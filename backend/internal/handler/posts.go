@@ -21,8 +21,9 @@ func NewPostsHandler(postService service.PostService) *PostHandler {
 }
 
 type PostsPayload struct {
-	Title   string `json:"title"`
-	Content string `json:"content"`
+	Title                string   `json:"title"`
+	Content              string   `json:"content"`
+	SocialConnectionsIDs []string `json:"social_connections_ids"`
 }
 
 func (p *PostHandler) CreateNewPost(w http.ResponseWriter, r *http.Request) {

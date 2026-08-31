@@ -12,7 +12,7 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (google_id, email)
 VALUES($1, $2)
-RETURNING id, google_id, email, created_at
+RETURNING id, google_id, email, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -28,12 +28,13 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.GoogleID,
 		&i.Email,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const getUserByGoogleID = `-- name: GetUserByGoogleID :one
-SELECT id, google_id, email, created_at FROM USERS
+SELECT id, google_id, email, created_at, updated_at FROM USERS
 WHERE google_id = $1
 `
 
@@ -45,6 +46,7 @@ func (q *Queries) GetUserByGoogleID(ctx context.Context, googleID string) (User,
 		&i.GoogleID,
 		&i.Email,
 		&i.CreatedAt,
+		&i.UpdatedAt,
 	)
 	return i, err
 }
