@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/Rq4n/autopost/internal/store"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/markbates/goth"
 )
@@ -22,7 +23,7 @@ func NewSocialService(store store.Querier) *SocialService {
 
 func (s *SocialService) ConnectNewProvider(
 	ctx context.Context,
-	userID pgtype.UUID,
+	userID uuid.UUID,
 	provider string,
 	pvUser goth.User,
 ) (*store.SocialConnection, error) {
@@ -48,4 +49,13 @@ func (s *SocialService) ConnectNewProvider(
 	}
 
 	return &social, nil
+}
+
+func (s *SocialService) GetProviderByUserID(ctx context.Context, userID uuid.UUID) ([]store.GetProviderByUserIDRow, error) {
+	provider, err := s.store.GetProviderByUserID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get socials %w", err)
+	}
+
+	return provider, nil
 }

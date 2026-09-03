@@ -7,64 +7,53 @@ import (
 
 	"github.com/Rq4n/autopost/internal/service"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type PostHandler struct {
-	postService service.PostService
+	postService *service.PostService
 }
 
-func NewPostsHandler(postService service.PostService) *PostHandler {
+func NewPostsHandler(postService *service.PostService) *PostHandler {
 	return &PostHandler{
 		postService: postService,
 	}
 }
 
 type PostsPayload struct {
-	Title                string   `json:"title"`
-	Content              string   `json:"content"`
-	SocialConnectionsIDs []string `json:"social_connections_ids"`
+	Title                string      `json:"title"`
+	Body                 string      `json:"content"`
+	SocialConnectionsIDs []uuid.UUID `json:"social_connections_ids"`
 }
 
-func (p *PostHandler) CreateNewPost(w http.ResponseWriter, r *http.Request) {
-	// Pega o user_id colocado pelo AuthMiddleware
-	userID, ok := r.Context().Value("userID").(string)
+func (p *PostHandler) CreateAndPublish(w http.ResponseWriter, r *http.Request) {
+	// 1. Extração do UserID do contexto
+	userID, ok := r.Context().Value("userID").(uuid.UUID)
 	if !ok {
 		log.Printf("failed to get user_id from session context")
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	parseID, err := uuid.Parse(userID)
-	if err != nil {
-		http.Error(w, "invalid user id", http.StatusUnauthorized)
-		return
-	}
-
-	sID := pgtype.UUID{
-		Bytes: parseID,
-		Valid: true,
-	}
-
+	// 2. Decode do Payload
 	var payload PostsPayload
-
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		http.Error(w, "invalid payload", http.StatusBadRequest)
+		http.Error(w, "invalid payload format or invalid UUIDs", http.StatusBadRequest)
 		return
 	}
 
-	// Validação básica
-	if payload.Title == "" || payload.Content == "" {
+	// 3. Validação dos campos obrigatórios
+	if payload.Title == "" || payload.Body == "" {
 		http.Error(w, "title and content are required", http.StatusBadRequest)
 		return
 	}
 
-	// Cria o post associado ao usuário autenticado
-	post, err := p.postService.CreateNewPost(
+	// 4. Chamada do serviço passando todos os parâmetros necessários
+	post, publishers, err := p.postService.CreateAndPublishPost(
 		r.Context(),
-		sID,
+		userID,
+		payload.SocialConnectionsIDs,
 		payload.Title,
-		payload.Content,
+		payload.Body,
 	)
 	if err != nil {
 		log.Printf("failed to create post: %v", err)
@@ -72,10 +61,19 @@ func (p *PostHandler) CreateNewPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// 5. Montagem da resposta HTTP
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 
-	if err := json.NewEncoder(w).Encode(post); err != nil {
+	response := struct {
+		Post       any `json:"post"`
+		Publishers any `json:"publishers"`
+	}{
+		Post:       post,
+		Publishers: publishers,
+	}
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
 		log.Printf("failed to encode post response: %v", err)
 	}
 }

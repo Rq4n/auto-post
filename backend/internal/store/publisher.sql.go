@@ -8,58 +8,23 @@ package store
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 const createPublisherJob = `-- name: CreatePublisherJob :many
 INSERT INTO publisher (post_id, user_id, social_connection_id, status)
-SELECT $1, $2, sc_id, 'pending'
-FROM unnest($3::uuid[]) AS sc_id
+SELECT $1, $2, unnest($3::uuid[]), 'pending'
 RETURNING id, post_id, user_id, social_connection_id, status, created_at, updated_at
 `
 
 type CreatePublisherJobParams struct {
-	PostID  pgtype.UUID
-	UserID  pgtype.UUID
-	Column3 []pgtype.UUID
+	PostID              uuid.UUID
+	UserID              uuid.UUID
+	SocialConnectionIds []uuid.UUID
 }
 
 func (q *Queries) CreatePublisherJob(ctx context.Context, arg CreatePublisherJobParams) ([]Publisher, error) {
-	rows, err := q.db.Query(ctx, createPublisherJob, arg.PostID, arg.UserID, arg.Column3)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Publisher
-	for rows.Next() {
-		var i Publisher
-		if err := rows.Scan(
-			&i.ID,
-			&i.PostID,
-			&i.UserID,
-			&i.SocialConnectionID,
-			&i.Status,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getPublishersByPostID = `-- name: GetPublishersByPostID :many
-SELECT id, post_id, user_id, social_connection_id, status, created_at, updated_at FROM publisher
-WHERE post_id = $1
-ORDER BY created_at ASC
-`
-
-func (q *Queries) GetPublishersByPostID(ctx context.Context, postID pgtype.UUID) ([]Publisher, error) {
-	rows, err := q.db.Query(ctx, getPublishersByPostID, postID)
+	rows, err := q.db.Query(ctx, createPublisherJob, arg.PostID, arg.UserID, arg.SocialConnectionIds)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +59,7 @@ SET status = 'completed',
 WHERE id = $1
 `
 
-func (q *Queries) UpdatePublisherAsCompleted(ctx context.Context, id pgtype.UUID) error {
+func (q *Queries) UpdatePublisherAsCompleted(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, updatePublisherAsCompleted, id)
 	return err
 }
@@ -106,7 +71,7 @@ SET status = 'failed',
 WHERE id = $1
 `
 
-func (q *Queries) UpdatePublisherAsFailed(ctx context.Context, id pgtype.UUID) error {
+func (q *Queries) UpdatePublisherAsFailed(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, updatePublisherAsFailed, id)
 	return err
 }

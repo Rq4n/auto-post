@@ -5,31 +5,32 @@
 package store
 
 import (
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Post struct {
-	ID        pgtype.UUID
-	UserID    pgtype.UUID
+	ID        uuid.UUID
+	UserID    uuid.UUID
 	Title     string
-	Content   string
+	Body      string
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 }
 
 type Publisher struct {
-	ID                 pgtype.UUID
-	PostID             pgtype.UUID
-	UserID             pgtype.UUID
-	SocialConnectionID pgtype.UUID
+	ID                 uuid.UUID
+	PostID             uuid.UUID
+	UserID             uuid.UUID
+	SocialConnectionID uuid.UUID
 	Status             string
 	CreatedAt          pgtype.Timestamptz
 	UpdatedAt          pgtype.Timestamptz
 }
 
 type SocialConnection struct {
-	ID             pgtype.UUID
-	UserID         pgtype.UUID
+	ID             uuid.UUID
+	UserID         uuid.UUID
 	Provider       string
 	ProviderUserID string
 	AccessToken    string
@@ -40,7 +41,7 @@ type SocialConnection struct {
 }
 
 type User struct {
-	ID        pgtype.UUID
+	ID        uuid.UUID
 	GoogleID  string
 	Email     string
 	CreatedAt pgtype.Timestamptz

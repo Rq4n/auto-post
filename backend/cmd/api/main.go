@@ -62,10 +62,10 @@ func main() {
 			dbc: &dbConfig,
 		},
 		Handler: Handler{
-			handlePost:      *handler.NewPostsHandler(*service.NewPostService(repo)),
 			handleUser:      *handler.NewUserHandler(*service.NewUserService(repo)),
 			handlePublisher: *handler.NewPublisherHandler(*service.NewPublisherService(repo)),
 			handleTwitter:   *handler.NewTwitterHandler(*service.NewSocialService(repo)),
+			handlePost:      *handler.NewPostsHandler(service.NewPostService(repo, service.NewPublisherService(repo))),
 		},
 	}
 

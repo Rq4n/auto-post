@@ -8,31 +8,65 @@ package store
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 const createNewPosts = `-- name: CreateNewPosts :one
-INSERT INTO posts (user_id,title, content)
+INSERT INTO posts (user_id, title, body)
 VALUES ($1, $2, $3)
-RETURNING id, user_id, title, content, created_at, updated_at
+RETURNING id, user_id, title, body, created_at, updated_at
 `
 
 type CreateNewPostsParams struct {
-	UserID  pgtype.UUID
-	Title   string
-	Content string
+	UserID uuid.UUID
+	Title  string
+	Body   string
 }
 
 func (q *Queries) CreateNewPosts(ctx context.Context, arg CreateNewPostsParams) (Post, error) {
-	row := q.db.QueryRow(ctx, createNewPosts, arg.UserID, arg.Title, arg.Content)
+	row := q.db.QueryRow(ctx, createNewPosts, arg.UserID, arg.Title, arg.Body)
 	var i Post
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
 		&i.Title,
-		&i.Content,
+		&i.Body,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getPublishersByPostID = `-- name: GetPublishersByPostID :many
+SELECT id, post_id, user_id, social_connection_id, status, created_at, updated_at FROM publisher
+WHERE post_id = $1
+ORDER BY created_at ASC
+`
+
+func (q *Queries) GetPublishersByPostID(ctx context.Context, postID uuid.UUID) ([]Publisher, error) {
+	rows, err := q.db.Query(ctx, getPublishersByPostID, postID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Publisher
+	for rows.Next() {
+		var i Publisher
+		if err := rows.Scan(
+			&i.ID,
+			&i.PostID,
+			&i.UserID,
+			&i.SocialConnectionID,
+			&i.Status,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

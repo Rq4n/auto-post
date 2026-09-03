@@ -55,7 +55,7 @@ func (a *app) mount() http.Handler {
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Use(auth.AuthMiddleware)
-		r.Post("/post", a.handlePost.CreateNewPost)
+		r.Post("/post", a.handlePost.CreateAndPublish)
 	})
 
 	// Google OAuth provider
@@ -65,11 +65,12 @@ func (a *app) mount() http.Handler {
 	r.Get("/auth/{provider}/callback", a.handleUser.GetAuthCallback)
 
 	r.Route("/social/connections", func(r chi.Router) {
-		// twitter provider iniciar auth e callback routes
-		r.Get("{provider}", a.handleTwitter.BeginProviderAuth)
-		r.Get("{provider}/callback", a.handleTwitter.HandleTwitterCallback)
-		// Outros providers que devem ser criados futuramente
+		r.Use(auth.AuthMiddleware)
+		r.Get("/{provider}", a.handleTwitter.BeginProviderAuth)
+		r.Get("/{provider}/callback", a.handleTwitter.HandleTwitterCallback)
 	})
+
+	r.Get("/v1/me", a.handleTwitter.GetProviderByUserID)
 
 	return r
 }

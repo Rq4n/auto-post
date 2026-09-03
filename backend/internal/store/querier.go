@@ -7,7 +7,7 @@ package store
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/google/uuid"
 )
 
 type Querier interface {
@@ -15,10 +15,11 @@ type Querier interface {
 	CreateNewPosts(ctx context.Context, arg CreateNewPostsParams) (Post, error)
 	CreatePublisherJob(ctx context.Context, arg CreatePublisherJobParams) ([]Publisher, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
-	GetPublishersByPostID(ctx context.Context, postID pgtype.UUID) ([]Publisher, error)
+	GetProviderByUserID(ctx context.Context, userID uuid.UUID) ([]GetProviderByUserIDRow, error)
+	GetPublishersByPostID(ctx context.Context, postID uuid.UUID) ([]Publisher, error)
 	GetUserByGoogleID(ctx context.Context, googleID string) (User, error)
-	UpdatePublisherAsCompleted(ctx context.Context, id pgtype.UUID) error
-	UpdatePublisherAsFailed(ctx context.Context, id pgtype.UUID) error
+	UpdatePublisherAsCompleted(ctx context.Context, id uuid.UUID) error
+	UpdatePublisherAsFailed(ctx context.Context, id uuid.UUID) error
 }
 
 var _ Querier = (*Queries)(nil)

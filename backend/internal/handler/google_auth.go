@@ -22,6 +22,7 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 
 func BeginAuthProviderCallback(w http.ResponseWriter, r *http.Request) {
 	provider := chi.URLParam(r, "provider")
+	
 	r = r.WithContext(context.WithValue(r.Context(), "provider", provider))
 	gothic.BeginAuthHandler(w, r)
 }
@@ -34,6 +35,7 @@ func (h *UserHandler) GetAuthCallback(w http.ResponseWriter, r *http.Request) {
 
 	googleUser, err := gothic.CompleteUserAuth(w, r)
 	if err != nil {
+		log.Printf("failed to complete %s auth: %v", provider, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -49,6 +51,7 @@ func (h *UserHandler) GetAuthCallback(w http.ResponseWriter, r *http.Request) {
 			googleUser.UserID,
 		)
 		if err != nil {
+			log.Printf("failed to create user: %v", err)
 			http.Error(w, "failed to create user", http.StatusInternalServerError)
 			return
 		}
@@ -56,7 +59,7 @@ func (h *UserHandler) GetAuthCallback(w http.ResponseWriter, r *http.Request) {
 
 	session, err := gothic.Store.Get(r, "session")
 	if err != nil {
-		log.Printf("failed to get session %v", err)
+		log.Printf("failed to get session: %v", err)
 		http.Error(w, "sessions error", http.StatusInternalServerError)
 		return
 	}
@@ -65,11 +68,11 @@ func (h *UserHandler) GetAuthCallback(w http.ResponseWriter, r *http.Request) {
 
 	err = session.Save(r, w)
 	if err != nil {
-		log.Printf("failed to save session %v", err)
+		log.Printf("failed to save session: %v", err)
 		http.Error(w, "sessions error", http.StatusInternalServerError)
 		return
 	}
 
-	log.Printf("user created %v", googleUser.UserID)
+	log.Printf("user authenticated/created successfully: %v", user.ID)
 	http.Redirect(w, r, "http://localhost:5173", http.StatusFound)
 }

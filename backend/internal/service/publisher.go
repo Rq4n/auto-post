@@ -2,10 +2,10 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Rq4n/autopost/internal/store"
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type PublisherService struct {
@@ -18,13 +18,19 @@ func NewPublisherService(store store.Querier) *PublisherService {
 	}
 }
 
-func (s *PublisherService) CreatePublisherJob(ctx context.Context, postID, userID uuid.UUID) ([]store.Publisher, error) {
-	pb, err := s.store.CreatePublisherJob(ctx, store.CreatePublisherJobParams{
-		PostID: pgtype.UUID{Bytes: postID, Valid: true},
-		UserID: pgtype.UUID{Bytes: userID, Valid: true},
+func (s *PublisherService) CreateJobs(ctx context.Context, postID, userID uuid.UUID, socialConnectionIDs []uuid.UUID) ([]store.Publisher, error) {
+	if len(socialConnectionIDs) == 0 {
+		return nil, nil
+	}
+
+	publishers, err := s.store.CreatePublisherJob(ctx, store.CreatePublisherJobParams{
+		PostID:              postID,
+		UserID:              userID,
+		SocialConnectionIds: socialConnectionIDs,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create publisher jobs: %w", err)
 	}
-	return pb, nil
+
+	return publishers, nil
 }

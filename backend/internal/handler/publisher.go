@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/Rq4n/autopost/internal/service"
 )
 
@@ -16,11 +14,5 @@ func NewPublisherHandler(publisherService service.PublisherService) *PublisherHa
 	}
 }
 
-// para cada social_connections_id deve ser criado um novo publisher
-
-func (s *PublisherHandler) CreatePublisher(w http.ResponseWriter, r *http.Request) {
-	// if err := json.NewDecoder(r.Body).Decode(r); err != nil {
-	// 	http.Error(w, "invalid payload", http.StatusBadRequest)
-	// 	return
-	// }
-}
+// func (s *PublisherHandler) CreatePublisher(w http.ResponseWriter, r *http.Request) {
+// }

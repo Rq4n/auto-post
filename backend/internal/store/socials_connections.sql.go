@@ -8,6 +8,7 @@ package store
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -25,7 +26,7 @@ RETURNING id, user_id, provider, provider_user_id, access_token, refresh_token, 
 `
 
 type ConnectNewProviderParams struct {
-	UserID         pgtype.UUID
+	UserID         uuid.UUID
 	Provider       string
 	ProviderUserID string
 	AccessToken    string
@@ -55,4 +56,47 @@ func (q *Queries) ConnectNewProvider(ctx context.Context, arg ConnectNewProvider
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const getProviderByUserID = `-- name: GetProviderByUserID :many
+SELECT
+   id,
+   user_id,
+   provider_user_id,
+   created_at
+FROM social_connections
+WHERE user_id = $1
+ORDER BY created_at ASC
+`
+
+type GetProviderByUserIDRow struct {
+	ID             uuid.UUID
+	UserID         uuid.UUID
+	ProviderUserID string
+	CreatedAt      pgtype.Timestamptz
+}
+
+func (q *Queries) GetProviderByUserID(ctx context.Context, userID uuid.UUID) ([]GetProviderByUserIDRow, error) {
+	rows, err := q.db.Query(ctx, getProviderByUserID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetProviderByUserIDRow
+	for rows.Next() {
+		var i GetProviderByUserIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.ProviderUserID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
